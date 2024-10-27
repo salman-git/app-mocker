@@ -16,7 +16,7 @@ export const CanvasComponent = () => {
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasEl.current);
     console.log('canvas', canvas)
-    canvas.setZoom(0.2)
+    canvas.setZoom(0.15)
 
     canvas.on('mouse:down', function (opt) {
       var evt = opt.e;
@@ -129,15 +129,15 @@ export const CanvasComponent = () => {
   const ungroupObjects = (group) => {
     const ungrouped = [];
     if (group && group.type === 'group') {
-      const objects = group.getObjects(); 
-      const groupLeft = group.left; 
-      const groupTop = group.top; 
+      const objects = group.getObjects();
+      const groupLeft = group.left;
+      const groupTop = group.top;
       console.log(group.originX)
       objects.forEach((obj) => {
         obj.set({
           left: groupLeft,
           top: groupTop,
-          group: null, 
+          group: null,
         });
 
         // Add the object back to the canvas
@@ -180,15 +180,15 @@ export const CanvasComponent = () => {
 
         const scaleX = innerScreenWidth / imgInstance.width;
         const scaleY = innerScreenHeight / imgInstance.height;
-        const scaleFactor = Math.min(scaleX, scaleY); // Use the larger factor to fill the inner screen
+        const scaleFactor = Math.max(scaleX, scaleY); // Use the larger factor to fill the inner screen
 
         imgInstance.set({
           scaleX: scaleFactor,
           scaleY: scaleFactor
         });
 
-        const newPhoneWidth = (outerFrame.strokeWidth *2)+ (imgInstance.width * scaleFactor); 
-        const newPhoneHeight = (outerFrame.strokeWidth*2) + (imgInstance.height * scaleFactor);
+        const newPhoneWidth = (outerFrame.strokeWidth * 2) + (imgInstance.width * scaleFactor);
+        const newPhoneHeight = (outerFrame.strokeWidth * 2) + (imgInstance.height * scaleFactor);
 
         selectedPhone.set({
           scaleX: newPhoneWidth / selectedPhone.width,
@@ -233,55 +233,76 @@ export const CanvasComponent = () => {
 
 
   const handleExport = () => {
-    // Find all phone holders and their contained objects
-    const phoneHolders = canvasRef.current.getObjects().filter(obj => obj.type === 'rect' && obj.fill === 'yellow'); // Assuming yellow phone holders
+    // Find all phone holders on the canvas
+    const phoneHolders = canvasRef.current.getObjects().filter(obj => obj.name === 'phone-holder');
 
-    // Create a temporary canvas to only include phone holders and their children
-    const tempCanvas = new fabric.StaticCanvas(null);
-
-    // Loop through each phone holder and its contained objects
+    // For each phone holder, export its contents
     phoneHolders.forEach(phoneHolder => {
-      const holderGroup = new fabric.Group();
-
-      // Get all objects on canvas that are inside the phone holder
-      const containedObjects = canvasRef.current.getObjects().filter(obj => {
-        // Check if object's boundaries are within phone holder's boundaries
-        return (
-          obj !== phoneHolder &&
-          obj.left >= phoneHolder.left &&
-          obj.top >= phoneHolder.top &&
-          obj.left + obj.width * obj.scaleX <= phoneHolder.left + phoneHolder.width * phoneHolder.scaleX &&
-          obj.top + obj.height * obj.scaleY <= phoneHolder.top + phoneHolder.height * phoneHolder.scaleY
-        );
+      // Create a temporary canvas with the same dimensions as the phone holder
+      const tempCanvas = new fabric.StaticCanvas(null);
+      tempCanvas.setDimensions({
+        width: phoneHolder.width,
+        height: phoneHolder.height,
       });
 
-      // Clone phone holder and contained objects into temp canvas
-      [phoneHolder, ...containedObjects].forEach(obj => {
-        obj.clone(clonedObj => holderGroup.addWithUpdate(clonedObj));
+      // Get all objects within or overlapping with the phone holder
+      // const containedObjects = canvasRef.current.getObjects().filter(obj => {
+      //   return (
+      //     obj !== phoneHolder &&
+      //     obj.left + obj.width * obj.scaleX > phoneHolder.left &&
+      //     obj.top + obj.height * obj.scaleY > phoneHolder.top &&
+      //     obj.left < phoneHolder.left + phoneHolder.width * phoneHolder.scaleX &&
+      //     obj.top < phoneHolder.top + phoneHolder.height * phoneHolder.scaleY
+      //   );
+      // });
+
+      // Clone each object and add it to the temporary canvas with offset adjustments
+      const cloningPromises = [phoneHolder, ...canvasRef.current.getObjects()].map(obj => {
+        return new Promise(resolve => {
+          obj.clone(clonedObj => {
+            clonedObj.set({
+              left: clonedObj.left - phoneHolder.left,
+              top: clonedObj.top - phoneHolder.top,
+            });
+            tempCanvas.add(clonedObj);
+            resolve();
+          });
+        });
       });
 
-      // Center group and add to the temp canvas
-      holderGroup.set({ left: 0, top: 0 });
-      tempCanvas.add(holderGroup);
+      // Wait for all clones to finish, then export
+      Promise.all(cloningPromises).then(() => {
+        // Export temp canvas as data URL and crop to phone holder's exact dimensions
+        const dataURL = tempCanvas.toDataURL({
+          format: 'png',
+          quality: 1,
+        });
+
+        // Create an image element to crop it further if needed
+        const img = new Image();
+        img.onload = () => {
+          const cropCanvas = document.createElement('canvas');
+          cropCanvas.width = phoneHolder.width;
+          cropCanvas.height = phoneHolder.height;
+          const ctx = cropCanvas.getContext('2d');
+
+          // Draw the loaded image with cropping on the canvas
+          ctx.drawImage(img, 0, 0, phoneHolder.width, phoneHolder.height);
+
+          // Download the cropped image
+          const croppedDataURL = cropCanvas.toDataURL('image/png');
+          const link = document.createElement('a');
+          link.href = croppedDataURL;
+          link.download = 'phoneholders-export.png';
+          link.click();
+
+          // Dispose of temporary canvases
+          tempCanvas.dispose();
+        };
+        img.src = dataURL;
+      });
     });
-
-    // Export temp canvas content
-    const dataURL = tempCanvas.toDataURL({
-      format: 'png',
-      quality: 1,
-      multiplier: 2,
-    });
-
-    // Download the exported image
-    const link = document.createElement('a');
-    link.href = dataURL;
-    link.download = 'phoneholders-export.png';
-    link.click();
-
-    // Dispose of temporary canvas to clean up resources
-    tempCanvas.dispose();
   };
-
 
   const handleRotationChange = (axis) => (event, newValue) => {
     setRotation((prevRotation) => ({ ...prevRotation, [axis]: newValue }));
