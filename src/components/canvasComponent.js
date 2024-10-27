@@ -6,7 +6,7 @@ export const CanvasComponent = () => {
   const canvasEl = useRef(null);
   const canvasRef = useRef(null);
   const phoneHolderWidth = 1080;
-  const phoneHolderHeight = 1920;
+  const phoneHolderHeight = 1920 * 1.2;
   const [phones, setPhones] = useState([])
   const [phoneHolders, setPhoneHolders] = useState([])
 
@@ -16,6 +16,7 @@ export const CanvasComponent = () => {
   useEffect(() => {
     const canvas = new fabric.Canvas(canvasEl.current);
     console.log('canvas', canvas)
+    canvas.setZoom(0.2)
 
     canvas.on('mouse:down', function (opt) {
       var evt = opt.e;
@@ -128,21 +129,15 @@ export const CanvasComponent = () => {
   const ungroupObjects = (group) => {
     const ungrouped = [];
     if (group && group.type === 'group') {
-      const objects = group.getObjects(); // Get the objects in the group
-      const groupLeft = group.left; // Store group left position
-      const groupTop = group.top; // Store group top position
-
-      // Iterate through the objects and set their position
+      const objects = group.getObjects(); 
+      const groupLeft = group.left; 
+      const groupTop = group.top; 
+      console.log(group.originX)
       objects.forEach((obj) => {
-        // Calculate the offsets based on originX and originY
-        const offsetX = obj.originX === 'center' ? (obj.width * obj.scaleX) / 2 : (obj.originX === 'right' ? obj.width * obj.scaleX : 0);
-        const offsetY = obj.originY === 'center' ? (obj.height * obj.scaleY) / 2 : (obj.originY === 'bottom' ? obj.height * obj.scaleY : 0);
-
-        // Set the new position considering the group's position
         obj.set({
-          left: obj.left + groupLeft - offsetX,
-          top: obj.top + groupTop - offsetY,
-          group: null, // Remove the group reference
+          left: groupLeft,
+          top: groupTop,
+          group: null, 
         });
 
         // Add the object back to the canvas
@@ -180,20 +175,20 @@ export const CanvasComponent = () => {
 
         const imgInstance = new fabric.Image(imgElement, {});
         imgInstance.set({ name: 'img-instance' })
-        const innerScreenWidth = innerScreen.width * selectedPhone.scaleX; // Use the scaled width of the inner screen
-        const innerScreenHeight = innerScreen.height * selectedPhone.scaleY; // Use the scaled height of the inner screen
+        const innerScreenWidth = innerScreen.width; // Use the scaled width of the inner screen
+        const innerScreenHeight = innerScreen.height // Use the scaled height of the inner screen
 
         const scaleX = innerScreenWidth / imgInstance.width;
         const scaleY = innerScreenHeight / imgInstance.height;
-        const scaleFactor = Math.max(scaleX, scaleY); // Use the larger factor to fill the inner screen
+        const scaleFactor = Math.min(scaleX, scaleY); // Use the larger factor to fill the inner screen
 
         imgInstance.set({
           scaleX: scaleFactor,
           scaleY: scaleFactor
         });
 
-        const newPhoneWidth = outerFrame.strokeWidth + (imgInstance.width * scaleFactor); // 10 is the outer-frame strokeWidth
-        const newPhoneHeight = outerFrame.strokeWidth + (imgInstance.height * scaleFactor);
+        const newPhoneWidth = (outerFrame.strokeWidth *2)+ (imgInstance.width * scaleFactor); 
+        const newPhoneHeight = (outerFrame.strokeWidth*2) + (imgInstance.height * scaleFactor);
 
         selectedPhone.set({
           scaleX: newPhoneWidth / selectedPhone.width,
@@ -215,8 +210,6 @@ export const CanvasComponent = () => {
           clipPath: clipPath
         });
 
-        // canvasRef.current.add(imgInstance);
-        // canvasRef.current.bringToFront(selectedPhone);
         const phoneGroup = new fabric.Group([imgInstance, selectedPhone], {
           left: selectedPhone.left,
           top: selectedPhone.top,
