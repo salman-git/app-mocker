@@ -1,0 +1,18 @@
+<svg width="300" height="600" viewBox="0 0 300 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Frame -->
+  <rect x="10" y="5" width="280" height="590" rx="30" ry="30" fill="none" stroke="black" stroke-width="10"/>
+
+  <!-- Inner Screen -->
+  <rect x="25" y="50" width="250" height="500" rx="15" ry="15" fill="transparent"/>
+
+  <!-- Camera Notch -->
+  <circle cx="260" cy="30" r="10" fill="black"/>
+
+  <!-- Side Buttons (Power & Volume) -->
+  <!-- Power Button on the Right (moved slightly inward) -->
+  <rect x="295" y="170" width="3" height="50" rx="0" fill="black"/>
+  
+  <!-- Volume Buttons on the Left -->
+  <rect x="2" y="150" width="3" height="40" rx="0" fill="black"/>
+  <rect x="2" y="200" width="3" height="40" rx="0" fill="black"/>
+</svg>
