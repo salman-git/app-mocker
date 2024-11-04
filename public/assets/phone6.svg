@@ -5,8 +5,12 @@
   <!-- Inner Screen -->
   <rect id="inner-screen" x="60" y="40" width="790" height="1840" rx="120" ry="120" fill="transparent"/>
 
-  <!-- Camera Notch -->
-  <circle id="camera-notch" cx="760" cy="120" r="40" fill="white"/>
+
+  
+  <rect id="camera-notch" x="355" y="60" width="200" height="50"  rx="20" ry="20" fill="white"/>
+  <!-- <circle id="camera-notch-circle" cx="525" cy="85" r="20" fill="#292929"/>
+  <circle id="camera-notch-circle2" cx="525" cy="85" r="10" fill="white"/> -->
+
 
   <!-- Side Buttons (Power & Volume) -->
   <!-- Power Button on the Right (moved slightly inward) -->

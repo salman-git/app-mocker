@@ -1,0 +1,79 @@
+.splash-screen {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+  
+  svg {
+	width: 100%;
+	height: 100%;
+  }
+  
+  .animate-rect1,
+.animate-rect2,
+.animate-path2,
+.animate-rect3,
+.animate-rect4,
+.animate-text1,
+.animate-text2 {
+	opacity: 0; /* Ensure elements are initially invisible */
+}
+  
+  /* Sequential animations for each element */
+  .animate-rect1 {
+	animation: fadeInScale 1s ease forwards;
+  }
+  
+  .animate-rect2 {
+	animation: fadeInScale 1s ease forwards;
+	animation-delay: 0.5s;
+  }
+  
+  .animate-path2 {
+	animation: fadeInScale 1s ease forwards;
+	animation-delay: 1s;
+  }
+  
+  .animate-rect3 {
+	animation: fadeInScale 1s ease forwards;
+	animation-delay: 1.5s;
+  }
+  
+  .animate-rect4 {
+	animation: fadeInScale 1s ease forwards;
+	animation-delay: 2s;
+  }
+  
+  .animate-text1 {
+	animation: fadeIn 1s ease forwards;
+	animation-delay: 2.5s;
+  }
+  
+  .animate-text2 {
+	animation: fadeIn 1s ease forwards;
+	animation-delay: 3s;
+  }
+  
+  /* Keyframes for animations */
+  @keyframes fadeInScale {
+	from {
+	  opacity: 0;
+	  transform: scale(0.8);
+	}
+	to {
+	  opacity: 1;
+	  transform: scale(1);
+	}
+  }
+  
+  @keyframes fadeIn {
+	from {
+	  opacity: 0;
+	}
+	to {
+	  opacity: 1;
+	}
+  }
+  
