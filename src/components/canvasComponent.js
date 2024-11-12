@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { fabric } from 'fabric';
-import { Box, Button, IconButton, Slider, Typography, ImageList, ImageListItem, TextField } from '@mui/material';
+import { Box, Button, IconButton, Slider, Typography, ImageList, ImageListItem, TextField, Checkbox } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import RestoreIcon from '@mui/icons-material/Restore';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
@@ -82,6 +82,16 @@ export const CanvasComponent = () => {
     lineThrough: false,
     textSize: 120
   });
+  const [shadow, setShadow] = useState({
+    color: "#000000",
+    offsetX: 10,
+    offsetY: 10,
+    enable: true,
+    blur: 50,
+  });
+  const [showShadowColorPicker, setShowShadowColorPicker] = useState(false)
+  const [tempShadowColor, setTempShadowColor] = useState("#000000")
+
   const handleChange = (event) => {
     const font = event.target.value;
     setSelectedFont(font);
@@ -263,6 +273,15 @@ export const CanvasComponent = () => {
     canvasRef.current.requestRenderAll()
   }, [cornerRadius])
 
+  useEffect(() => {
+    const activeObject = canvasRef.current.getActiveObject()
+    if (!activeObject) return
+    activeObject.set({
+      shadow: shadow.enable ? shadow : {}
+    })
+    canvasRef.current.requestRenderAll()
+  }, [shadow])
+
   const createGradientBackground = () => {
     const patternCanvas = document.createElement('canvas');
     const patternSize = 40;
@@ -312,6 +331,7 @@ export const CanvasComponent = () => {
           color: 'rgba(0,0,0,0.3)',  // Shadow color and opacity
           blur: 10,                  // Shadow blur (softness)
           offsetX: 20,               // Horizontal offset
+          size: 10,
           offsetY: 10,               // Vertical offset
         }
       });
@@ -719,7 +739,7 @@ export const CanvasComponent = () => {
             </IconButton>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>Rotate Z</Typography>
+            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>rotate Z</Typography>
             <Typography variant='body2' sx={{ px: 2, borderRadius: 5, background: 'grey', fontSize: 10, textAlign: 'center', alignSelf: 'center' }}>{rotation.z}</Typography>
           </Box>
           <Slider
@@ -738,7 +758,7 @@ export const CanvasComponent = () => {
             </IconButton>
           </Box>
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>Skew X</Typography>
+            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>skew X</Typography>
             <Typography variant='body2' sx={{ px: 2, borderRadius: 5, background: 'grey', fontSize: 10, textAlign: 'center', alignSelf: 'center' }}>{skew.x}</Typography>
           </Box>
           <Slider
@@ -749,7 +769,7 @@ export const CanvasComponent = () => {
             aria-labelledby="skew-x-slider"
           />
           <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>Skew Y</Typography>
+            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>skew Y</Typography>
             <Typography variant='body2' sx={{ px: 2, borderRadius: 5, background: 'grey', fontSize: 10, textAlign: 'center', alignSelf: 'center' }}>{skew.y}</Typography>
           </Box>          <Slider
             value={skew.y}
@@ -758,6 +778,83 @@ export const CanvasComponent = () => {
             max={50}
             aria-labelledby="skew-y-slider"
           />
+
+          {/* shadowsection */}
+          <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="body2" sx={{ flexGrow: 1 }}>Shadow</Typography>
+            <IconButton sx={{ px: 1 }} size='small' onClick={_ => {
+              setShadow({ color: "#000000", offsetX: 10, offsetY: 10, blur: 50, opacity: 100 });
+            }}>
+              <RestoreIcon fontSize='small' />
+            </IconButton>
+          </Box>
+          <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>enable</Typography>
+            <Checkbox value={shadow.enable} onChange={event => setShadow(prev => ({ ...prev, enable: event.target.checked }))} />
+          </Box>
+          {shadow.enable && <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Typography variant="body2" sx={{ mb: 1 }}>color</Typography>
+              <Box
+                sx={{
+                  width: 30,
+                  height: 20,
+                  backgroundColor: shadow.color,
+                  cursor: 'pointer',
+                  border: '1px solid #ccc'
+                }}
+                onClick={() => setShowShadowColorPicker(!showShadowColorPicker)}
+              />
+              {showShadowColorPicker && (
+                <Box sx={{ backgroundColor: 'white', position: 'absolute', zIndex: 2, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <SketchPicker
+                    color={tempShadowColor}
+                    onChange={color => setTempShadowColor(color.hex)}
+                  />
+                  <Button variant='text' onClick={_ => {
+                    setShadow(prev => ({ ...prev, color: tempShadowColor }))
+                    setShowShadowColorPicker(false)
+                  }}>Done</Button>
+                </Box>
+              )}
+            </Box>
+            <Box>
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>x-offset</Typography>
+                <Typography variant='body2' sx={{ px: 2, borderRadius: 5, background: 'grey', fontSize: 10, textAlign: 'center', alignSelf: 'center' }}>{shadow.offsetX}</Typography>
+              </Box>
+              <Slider
+                value={shadow.offsetX}
+                onChange={(e, value) => setShadow(prev => ({ ...prev, offsetX: value }))}
+                min={-100}
+                max={100}
+              />
+            </Box>
+            <Box>
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>y-offset</Typography>
+                <Typography variant='body2' sx={{ px: 2, borderRadius: 5, background: 'grey', fontSize: 10, textAlign: 'center', alignSelf: 'center' }}>{shadow.offsetY}</Typography>
+              </Box>
+              <Slider
+                value={shadow.offsetY}
+                onChange={(e, value) => setShadow(prev => ({ ...prev, offsetY: value }))}
+                min={-100}
+                max={100}
+              />
+            </Box>
+            <Box>
+              <Box sx={{ display: 'flex', flexDirection: 'row' }}>
+                <Typography variant="body2" sx={{ flexGrow: 1, fontsize: 10 }}>blur</Typography>
+                <Typography variant='body2' sx={{ px: 2, borderRadius: 5, background: 'grey', fontSize: 10, textAlign: 'center', alignSelf: 'center' }}>{shadow.blur}</Typography>
+              </Box>
+              <Slider
+                value={shadow.blur}
+                onChange={(e, value) => setShadow(prev => ({ ...prev, blur: value }))}
+                min={0}
+                max={100}
+              />
+            </Box>
+          </Box>}
 
           <Button variant="contained" color="primary" onClick={handleExport} sx={{ mb: 2 }}>
             Export to PNG
