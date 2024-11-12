@@ -1,0 +1,8 @@
+<svg width="910" height="1920" viewBox="0 0 910 1920" xmlns="http://www.w3.org/2000/svg">
+  <!-- Outer Frame -->
+  <rect id="outer-frame" x="40" y="20" width="830" height="1880" rx="120" ry="120" fill="none" stroke="white" stroke-width="20"/>
+
+  <!-- Inner Screen -->
+  <rect id="inner-screen" x="50" y="30" width="810" height="1860" rx="100" ry="100" fill="transparent"/>
+
+</svg>

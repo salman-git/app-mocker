@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { fabric } from 'fabric';
-import { Box, Button, IconButton, Slider, Typography, ImageList, ImageListItem } from '@mui/material';
+import { Box, Button, IconButton, Slider, Typography, ImageList, ImageListItem, TextField } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import RestoreIcon from '@mui/icons-material/Restore';
 import PhoneAndroidIcon from '@mui/icons-material/PhoneAndroid';
@@ -26,10 +26,12 @@ import { FormControl, InputLabel, Select, MenuItem } from '@mui/material'
 const phoneFrames = [
   { id: 'phone1', src: './assets/phone1.svg', name: 'Phone 1' },
   { id: 'phone2', src: './assets/phone2.svg', name: 'Phone 2' },
-  { id: 'phone3', src: './assets/phone3.svg', name: 'Phone 1' },
-  { id: 'phone4', src: './assets/phone4.svg', name: 'Phone 2' },
-  { id: 'phone5', src: './assets/phone5.svg', name: 'Phone 1' },
-  { id: 'phone6', src: './assets/phone6.svg', name: 'Phone 2' },
+  { id: 'phone3', src: './assets/phone3.svg', name: 'Phone 3' },
+  { id: 'phone4', src: './assets/phone4.svg', name: 'Phone 4' },
+  { id: 'phone5', src: './assets/phone5.svg', name: 'Phone 5' },
+  { id: 'phone6', src: './assets/phone6.svg', name: 'Phone 6' },
+  { id: 'phone7', src: './assets/phone7.svg', name: 'Phone 7' },
+
 ];
 const fonts = [
   { name: 'Roboto', style: { fontFamily: 'Roboto' } },
@@ -70,7 +72,7 @@ export const CanvasComponent = () => {
   const [showTextStrokeColorPicker, setShowTextStrokeColorPicker] = useState(false)
   const [textStrokeWidth, setTextStrokeWidth] = useState(0)
   const [isPanning, setIsPanning] = useState(true)
-  const [selectedFrame, setSelectedFrame] = useState(phoneFrames[2].src);
+  const [selectedFrame, setSelectedFrame] = useState(phoneFrames[6].src);
   const [selectedFont, setSelectedFont] = useState('Roboto');
   const [fontStyle, setFontStyle] = useState({
     bold: false,
@@ -78,6 +80,7 @@ export const CanvasComponent = () => {
     underline: false,
     overline: false,
     lineThrough: false,
+    textSize: 120
   });
   const handleChange = (event) => {
     const font = event.target.value;
@@ -217,7 +220,8 @@ export const CanvasComponent = () => {
         'fontStyle': fontStyle.italic ? 'italic' : 'normal',
         'underline': fontStyle.underline,
         'overline': fontStyle.overline,
-        'linethrough': fontStyle.lineThrough
+        'linethrough': fontStyle.lineThrough,
+        'fontSize': fontStyle.textSize
       });
       canvasRef.current.requestRenderAll();
     }
@@ -295,7 +299,6 @@ export const CanvasComponent = () => {
 
 
   const addPhoneFrame = (phoneFrameUrl, phoneHolder) => {
-
     fabric.loadSVGFromURL(phoneFrameUrl, (objects, options) => {
       let phone = fabric.util.groupSVGElements(objects, options);
       phone.set({
@@ -305,20 +308,24 @@ export const CanvasComponent = () => {
         scaleY: phoneHeight / phone.height,
         top: phoneHolder.top + phoneHolderHeight - (phoneHolderHeight * 0.05) - phoneHeight,
         left: phoneHolder.left + (phoneHolderWidth - phoneWidth) / 2,
+        shadow: {
+          color: 'rgba(0,0,0,0.3)',  // Shadow color and opacity
+          blur: 10,                  // Shadow blur (softness)
+          offsetX: 20,               // Horizontal offset
+          offsetY: 10,               // Vertical offset
+        }
       });
       phone.bringToFront()
-
       canvasRef.current.add(phone);
       setPhones([...phones, phone])
     });
   };
 
   const addText = (phoneHolder) => {
-    const textSize = 20 * (phoneHolder.width / 120);
 
     let text = new fabric.Textbox("double-click to edit", {
       fontFamily: selectedFont,
-      fontSize: textSize,
+      fontSize: fontStyle.textSize,
       fontWeight: fontStyle.bold ? 'bold' : 'normal',
       fontStyle: fontStyle.italic ? 'italic' : 'normal',
       underline: fontStyle.underline,
@@ -340,7 +347,6 @@ export const CanvasComponent = () => {
     canvasRef.current.add(text);
   };
 
-
   const addPhoneHolder = (holderTop, holderLeft) => {
     const phoneHolder = new fabric.Rect({
       top: holderTop,
@@ -348,8 +354,8 @@ export const CanvasComponent = () => {
       width: phoneHolderWidth,
       height: phoneHolderHeight,
       fill: backgroundColor,
-      rx: cornerRadius,
-      ry: cornerRadius,
+      rx: cornerRadius * 2,
+      ry: cornerRadius * 2,
     });
     phoneHolder.set({
       name: 'phone-holder'
@@ -425,18 +431,36 @@ export const CanvasComponent = () => {
 
 
   const handleImageUpload = (event) => {
-    let selectedPhone = canvasRef.current.getActiveObject();
-    if (!selectedPhone) return;
-    if (selectedPhone.name != 'phone-frame' && selectedPhone.name != 'phone-group')
-      return;
+
     const file = event.target.files[0];
     const reader = new FileReader();
 
     reader.onload = (e) => {
       const imgElement = new Image();
       imgElement.src = e.target.result;
+      let selectedPhone = canvasRef.current.getActiveObject();
 
       imgElement.onload = () => {
+        const imgInstance = new fabric.Image(imgElement, {});
+
+        if (!selectedPhone) {
+          canvasRef.current.add(imgInstance);
+          canvasRef.current.requestRenderAll()
+          return
+        } else if (selectedPhone && selectedPhone.name == 'phone-holder') {
+          selectedPhone.set({
+            fill: new fabric.Pattern({
+              source: imgElement,
+              repeat: 'no-repeat' // or 'repeat' for tiling
+            }),
+
+          })
+          canvasRef.current.requestRenderAll()
+          return
+        }
+        else if (selectedPhone.name != 'phone-frame' && selectedPhone.name != 'phone-group')
+          return;
+
         if (selectedPhone.name == 'phone-group') {
           const ungrouped = ungroupObjects()
           selectedPhone = ungrouped.find(obj => obj.name == 'phone-frame')
@@ -454,8 +478,7 @@ export const CanvasComponent = () => {
         let innerScreen = selectedPhone.getObjects().find(obj => obj.id == 'inner-screen');
         let outerFrame = selectedPhone.getObjects().find(obj => obj.id == 'outer-frame');
 
-        const imgInstance = new fabric.Image(imgElement, {});
-        imgInstance.set({ name: 'img-instance' })
+        imgInstance.set({ name: 'img-instance', objectCaching: false })
         const innerScreenWidth = innerScreen.width;
         const innerScreenHeight = innerScreen.height
 
@@ -468,19 +491,19 @@ export const CanvasComponent = () => {
           scaleY: scaleFactor
         });
 
-        const newPhoneWidth = (outerFrame.strokeWidth * 2) + (imgInstance.width * scaleFactor);
-        const newPhoneHeight = (outerFrame.strokeWidth * 2) + (imgInstance.height * scaleFactor);
+        const newPhoneWidth = (imgInstance.width * scaleFactor);
+        const newPhoneHeight = (imgInstance.height * scaleFactor);
 
         selectedPhone.set({
-          scaleX: newPhoneWidth / selectedPhone.width,
-          scaleY: newPhoneHeight / selectedPhone.height,
+          scaleX: newPhoneWidth / innerScreen.width,
+          scaleY: newPhoneHeight / innerScreen.height,
         });
 
         const clipPath = new fabric.Rect({
           width: imgInstance.width,
           height: imgInstance.height,
-          rx: outerFrame.rx + 10,
-          ry: outerFrame.ry + 10,
+          rx: innerScreen.rx,
+          ry: innerScreen.ry,
           originX: 'center',
           originY: 'center'
         });
@@ -494,6 +517,7 @@ export const CanvasComponent = () => {
         var sel = new fabric.ActiveSelection([imgInstance, selectedPhone], {
           canvas: canvasRef.current,
         });
+
         let phoneGroup = sel.toGroup()
         phoneGroup.set({ name: 'phone-group', lockRotation: true })
         canvasRef.current.setActiveObject(phoneGroup);
@@ -631,7 +655,7 @@ export const CanvasComponent = () => {
 
       }}>
         <img src="./logo192.png"></img>
-        
+
         <StyledIconButton
           title="home"
           onClick={() => handleIconClick('home')}
@@ -790,6 +814,27 @@ export const CanvasComponent = () => {
         )}
         {selectedIcon == 'text' && <Box sx={{ backgroundColor: 'lightgrey', width: '100%', padding: 2, borderRadius: 5 }}>
           <Button variant='contained' sx={{ mb: 2 }} onClick={_ => addText(phoneHolders[phoneHolders.length - 1])}>Add Text</Button>
+          <Box>
+            <Box sx={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="body2" sx={{ fontsize: 10 }}>Text Size</Typography>
+              <TextField type='number' height={10} value={fontStyle.textSize} onChange={e => setFontStyle(prev => ({ ...prev, textSize: e.target.value }))}
+                sx={{
+                  width: 70,
+                  '& .MuiOutlinedInput-root': {
+                    height: 30, // Adjust this value for your desired height
+                    fontSize: 12,
+                    padding: '0 8px', // Reduces padding for a shorter appearance
+                    '& fieldset': {
+                      borderColor: 'lightgrey', // Optional: adjust border color if needed
+                    },
+                  },
+                  '& .MuiOutlinedInput-input': {
+                    padding: '4px 0', // Reduces internal padding to decrease height further
+                    textAlign: 'center',
+                  },
+                }}></TextField>
+            </Box>
+          </Box>
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="body2" sx={{ mb: 1 }}>Text Color</Typography>
             <Box
@@ -886,7 +931,7 @@ export const CanvasComponent = () => {
         </Box>}
         {selectedIcon == 'phone-frame' && <Box sx={{ display: 'flex', flexDirection: 'column', backgroundColor: 'lightgrey', width: '100%', padding: 2, borderRadius: 5 }}>
           <Typography variant="body1" sx={{ mb: 1 }}>Select Phone Frame</Typography>
-          <ImageList cols={1} rowHeight={100} sx={{ height: 10, mb: 2, overflowX: 'auto', flexGrow: 1 }}>
+          <ImageList cols={2} rowHeight={100} sx={{ height: 10, mb: 2, overflowX: 'auto', flexGrow: 1 }}>
             {phoneFrames.map((frame) => (
               <ImageListItem key={frame.id} onClick={() => setSelectedFrame(frame.src)}>
                 <Box

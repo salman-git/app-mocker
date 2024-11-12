@@ -3,7 +3,7 @@
   <rect id="outer-frame" x="40" y="20" width="830" height="1880" rx="120" ry="120" fill="none" stroke="white" stroke-width="40"/>
 
   <!-- Inner Screen -->
-  <rect id="inner-screen" x="60" y="40" width="790" height="1840" rx="120" ry="120" fill="transparent"/>
+  <rect id="inner-screen" x="60" y="40" width="790" height="1840" rx="100" ry="100" fill="transparent"/>
 
 
   

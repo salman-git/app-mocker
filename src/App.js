@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import CanvasComponent from './components/canvasComponent';
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import LoadingScreen from './pages/loadingScreen';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
 import { blueGrey, deepOrange } from '@mui/material/colors';
 import WebFont from 'webfontloader';
+import LandingPage from './pages/landingPage';
+import CreatorPage from './pages/creatorPage'
 
 let theme = createTheme({
   palette: {
@@ -29,13 +31,20 @@ function App() {
     });
     const timer = setTimeout(() => {
       setLoading(false)
-    }, 4000);
+    }, 3000);
     return () => clearTimeout(timer)
   }, []);
+  
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {loading ? <LoadingScreen /> : <CanvasComponent />}
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={loading ? <LoadingScreen /> : <LandingPage />}
+          ></Route>
+          <Route path="creator" element={<CreatorPage/>}></Route>
+        </Routes>
+      </BrowserRouter>
       <CssBaseline />
     </ThemeProvider>
   );
