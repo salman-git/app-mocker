@@ -892,7 +892,6 @@ export const CanvasComponent = () => {
 
                 </Box>
               )}
-
             </Box>
             <Box>
               <Box sx={{ display: 'flex', flexDirection: 'row' }}>
