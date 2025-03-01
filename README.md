@@ -31,7 +31,7 @@
 4. Open [http://localhost:3000](http://localhost:3000) in your browser and start designing!  
 
 ## 🖥️ Demo  
-Check out the live demo: [App Mocker Live](app-mocker.vercel.app/) 
+Check out the live demo: [App Mocker Live](https://app-mocker.vercel.app/) 
 
 ## 🎨 Screenshots  
 
