@@ -34,6 +34,12 @@
 Check out the live demo: [App Mocker Live](https://app-mocker.vercel.app/) 
 
 ## 🎨 Screenshots  
+<img src="./sample_shots/Screenshot_20250302_005515.png" alt="tool" width="750"/>
+<div style="display: flex; gap: 10px;">
+  <img src="./sample_shots/phoneholders-export(4).png" alt="output1" width="250"/>
+  <img src="./sample_shots/phoneholders-export(3).png" alt="output2" width="250"/>
+  <img src="./sample_shots/phoneholders-export(5).png" alt="output3" width="250"/>
+</div>
 
 ## 🏗️ Contributing  
 Want to improve App Mocker? Contributions are welcome! Fork the repo, create a branch, and submit a pull request.  
